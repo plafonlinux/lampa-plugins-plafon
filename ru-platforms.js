@@ -28,15 +28,6 @@
         try { Lampa.Storage.set('content_rows_recomend_watch', 'false'); } catch (e) {}
     }
 
-    // Владелец не пользуется боковым меню — поиск и настройки уже есть в шапке.
-    // Чистый CSS-скрытие, без удаления DOM-узла: ничего в логике фокуса не ломает,
-    // спатиал-навигация сама пропускает display:none элементы.
-    function hideSideMenu() {
-        var style = document.createElement('style');
-        style.textContent = '.menu { display: none !important; }';
-        document.head.appendChild(style);
-    }
-
     function fetchPlatform(provider, onSuccess, onError) {
         var url = API_BASE +
             '?selectFields=name&selectFields=poster&selectFields=rating&selectFields=year' +
@@ -130,7 +121,6 @@
 
     function init() {
         disableUnwantedRows();
-        hideSideMenu();
 
         PLATFORMS.forEach(function (platform) {
             Lampa.ContentRows.add({
