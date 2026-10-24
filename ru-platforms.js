@@ -92,33 +92,39 @@
         try { Lampa.Storage.set(CACHE_KEY, cache); } catch (e) {}
     }
 
+    // ContentRows.call() вызывает row.call(params, screen) СИНХРОННО и ждёт в ответ
+    // функцию (не результат) — эта функция уже получает настоящий ready-колбэк и
+    // может звать его асинхронно. Два уровня функций обязательны, один уровень
+    // молча проваливается (ready внутри на самом деле оказывается params).
     function rowLoader(platform) {
-        return function (ready) {
-            var cache = getCache();
-            var entry = cache[platform.id];
-            var now = Date.now();
+        return function (params, screen) {
+            return function (ready) {
+                var cache = getCache();
+                var entry = cache[platform.id];
+                var now = Date.now();
 
-            if (entry && entry.ts && (now - entry.ts) < CACHE_TTL && entry.cards && entry.cards.length) {
-                ready({ results: entry.cards });
-                return;
-            }
-
-            fetchPlatform(platform.provider, function (docs) {
-                var cards = docs.map(docToCard).filter(Boolean);
-
-                if (!cards.length && entry && entry.cards && entry.cards.length) {
-                    // сеть подвела, но есть старый кэш — лучше показать его, чем пустую строку
+                if (entry && entry.ts && (now - entry.ts) < CACHE_TTL && entry.cards && entry.cards.length) {
                     ready({ results: entry.cards });
                     return;
                 }
 
-                cache[platform.id] = { ts: now, cards: cards };
-                setCache(cache);
-                ready({ results: cards });
-            }, function () {
-                if (entry && entry.cards && entry.cards.length) ready({ results: entry.cards });
-                else ready({ results: [] });
-            });
+                fetchPlatform(platform.provider, function (docs) {
+                    var cards = docs.map(docToCard).filter(Boolean);
+
+                    if (!cards.length && entry && entry.cards && entry.cards.length) {
+                        // сеть подвела, но есть старый кэш — лучше показать его, чем пустую строку
+                        ready({ results: entry.cards });
+                        return;
+                    }
+
+                    cache[platform.id] = { ts: now, cards: cards };
+                    setCache(cache);
+                    ready({ results: cards });
+                }, function () {
+                    if (entry && entry.cards && entry.cards.length) ready({ results: entry.cards });
+                    else ready({ results: [] });
+                });
+            };
         };
     }
 
