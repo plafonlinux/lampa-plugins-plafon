@@ -4,7 +4,7 @@
     var API_KEY = 'Y73Q7RV-G3348Y1-M4XXJWC-SWJ9CF5';
     var API_BASE = 'https://api.poiskkino.dev/v1.4/movie';
     var CACHE_TTL = 20 * 60 * 60 * 1000; // 20 часов
-    var CACHE_KEY = 'plafon_ru_platforms_cache';
+    var CACHE_KEY = 'plafon_ru_platforms_cache_v2';
 
     var PLATFORMS = [
         { id: 'okko', title: 'Okko', provider: 'Okko', index: 10 },
@@ -110,6 +110,7 @@
 
                     cache[platform.id] = { ts: now, cards: cards };
                     setCache(cache);
+                    console.log('PLAFON_DEBUG', platform.id, 'cards:', cards.length, 'first:', JSON.stringify(cards[0]));
                     ready({ results: cards });
                 }, function () {
                     if (entry && entry.cards && entry.cards.length) ready({ results: entry.cards });
